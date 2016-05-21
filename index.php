@@ -2,7 +2,7 @@
 
 function __autoload($class) {
 
-    require_once "$class.php";
+    require_once str_replace('\\', '/', $class).".php";
 }
 
 echo "<pre>";
