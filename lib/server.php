@@ -10,7 +10,7 @@ class Server {
     public function __construct() {
 
         $this->parseApi();
-        $this->serveApi();
+//        $this->serveApi();
     }
 
     private function getData() {
