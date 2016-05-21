@@ -8,6 +8,6 @@ function __autoload($class) {
 echo "Welcome to API\n\n";
 print_r($_SERVER);
 
-//new lib\Server();
+new lib\Server();
 
 
