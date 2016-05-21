@@ -35,9 +35,9 @@ class Server {
 
         $_400 = new Error('Invalid Endpoint', 400);
 
-        $url = explode('/', trim($_SERVER['SCRIPT_NAME'], '/ '));
+        $url = explode('/', trim($_GET['url'], '/ '));
 
-        print_r($url);
+        print_r($_GET);
 
         if ($url[0] === '') {
             $_400->send();
