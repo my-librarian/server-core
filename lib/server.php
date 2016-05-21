@@ -37,6 +37,8 @@ class Server {
 
         $url = explode('/', trim($_SERVER['SCRIPT_NAME'], '/ '));
 
+        print_r($url);
+
         if ($url[0] === '') {
             $_400->send();
         }
