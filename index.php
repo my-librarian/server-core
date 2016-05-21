@@ -1,3 +1,8 @@
 <?php
 
-echo "Hello API";
+function __autoload($class) {
+
+    require_once "$class.php";
+}
+
+new lib\Server();
