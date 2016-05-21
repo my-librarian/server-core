@@ -2,13 +2,10 @@
 
 function __autoload($class) {
 
-    require_once str_replace('\\', '/', $class).".php";
+    $class = strtolower($class);
+    $filename = str_replace('\\', '/', $class).".php";
+
+    require_once $filename;
 }
 
-echo "<pre>";
-echo "Welcome to API\n\n";
-print_r($_SERVER);
-
 new lib\Server();
-
-
