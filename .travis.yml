@@ -8,3 +8,5 @@ php:
 - '5.6'
 after_success:
   sh deploy.sh
+script:
+  echo "YAY!!"
