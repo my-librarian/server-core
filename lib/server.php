@@ -35,9 +35,11 @@ class Server {
 
         $_400 = new Error('Invalid Endpoint', 400);
 
-        $url = explode('/', trim($_GET['url'], '/ '));
+        $url = explode($_SERVER['REQUEST_URI'], '?')[0];
+        $url = str_replace('/api/', '', $url);
+        $url = explode('/', trim($url, '/ '));
 
-        print_r($_GET);
+        print_r($url);
 
         if ($url[0] === '') {
             $_400->send();
