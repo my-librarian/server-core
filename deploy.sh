@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 if [ ! -z "$TRAVIS_TAG" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-  rm -rf dist
-  npm run build
   find handlers -type f -exec curl -u $USER:$PASS $HOST/handlers/ --ftp-create-dir -T {} \;
   find lib -type f -exec curl -u $USER:$PASS $HOST/lib --ftp-create-dir -T {} \;
   curl -u $USER:$PASS $HOST/ --ftp-create-dir -T index.php
