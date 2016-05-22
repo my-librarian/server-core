@@ -64,7 +64,7 @@ class Server {
             $handler = new $Handler();
             $params = array_slice($url, 1);
 
-            $params = array_merge($params, $this->getData());
+            $params[] = $this->getData();
 
             if (method_exists($handler, $method)) {
                 call_user_func_array([$handler, $method], $params);
