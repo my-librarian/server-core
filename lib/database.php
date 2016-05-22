@@ -15,16 +15,16 @@ class Database extends \mysqli {
 
     private function bindParams(&$stmt, $params) {
 
-        foreach ($params as $key => $value) {
-            $params[$key] = &$value;
-        }
+        $bound_params = [str_repeat('s', count($params))];
 
-        array_unshift($params, str_repeat('s', count($params)));
+        for ($i = 0; $i < count($params); ++$i) {
+            $bound_params[] = &$params[$i];
+        }
 
         call_user_func_array([
             $stmt,
             'bind_param'
-        ], $params);
+        ], $bound_params);
     }
 
     public function select($sql, $params = []) {
