@@ -6,6 +6,7 @@ class Server {
 
     private $_url = "";
     private $_method = "";
+    private static $sep = DIRECTORY_SEPARATOR;
 
     public function __construct() {
 
@@ -54,10 +55,12 @@ class Server {
 
         $url = $this->_url;
         $method = $this->_method;
-        $Handler = "handlers\\".$url[0];
 
-        if (class_exists($Handler)) {
+        $filename = join(self::$sep, [__DIR__, '..', 'handlers', $url[0] . '.php']);
 
+        if (file_exists($filename)) {
+
+            $Handler = "handlers\\" . $url[0];
             $handler = new $Handler();
             $params = array_slice($url, 1);
 
