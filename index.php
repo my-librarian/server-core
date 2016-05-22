@@ -1,5 +1,7 @@
 <?php
 
+header('Content-type: application/json');
+
 function __autoload($class) {
 
     $class = strtolower($class);
