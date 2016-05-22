@@ -14,4 +14,9 @@ class Handler extends Database {
 
         parent::__construct($db_host, $db_user, $db_pass, $db_name);
     }
+
+    public function send($result = []) {
+
+        echo json_encode($result);
+    }
 }
