@@ -2,10 +2,17 @@
 
 namespace handlers;
 
-class Book {
+use lib\Handler;
 
-    function get() {
+class Book extends Handler {
 
-        echo "Sample book api";
+    function get($id) {
+
+        $result = $this->select(
+            'SELECT * FROM books WHERE bookid = ?',
+            [$id]
+        );
+
+        $this->send($result);
     }
 }
