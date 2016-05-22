@@ -45,4 +45,23 @@ class Database extends \mysqli {
 
         return $result->fetch_all(MYSQLI_ASSOC);
     }
+
+    public function insert($table, $columns, $values) {
+
+        $columns = '`' . join('`,`', $columns) . '`';
+        $valueHolders = substr(str_repeat('?,', count($values)), 0, -1);
+
+        $stmt = $this->prepare("INSERT INTO $table ($columns) values ($valueHolders)");
+
+        $this->bindParams($stmt, $values);
+
+        $stmt->execute();
+
+        if ($stmt->error) {
+            $_500 = new Error($stmt->error, 500);
+            $_500->send();
+        }
+
+        return $this->insert_id;
+    }
 }
