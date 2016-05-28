@@ -17,6 +17,10 @@ class Handler extends Database {
 
     public function send($result = []) {
 
+        if(count($result) === 0) {
+            $result = new \stdClass();
+        }
+        
         echo json_encode($result);
     }
 }
