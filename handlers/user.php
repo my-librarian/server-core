@@ -4,6 +4,7 @@ namespace handlers;
 
 use lib\Error;
 use lib\Handler;
+use lib\Session;
 
 class User extends Handler {
 
@@ -24,12 +25,19 @@ class User extends Handler {
 
     function get($deptNo, $pass) {
 
-        $ids = $this->select(
-            'SELECT userid FROM users WHERE deptno=? AND password=?',
+        $users = $this->select(
+            'SELECT userid, deptno, name, level FROM users WHERE deptno=? AND password=?',
             [$deptNo, $this->encrypt($pass)]
         );
 
-        if(count($ids) > 0) {
+        if (count($users) > 0) {
+
+            $user = $users[0];
+
+            foreach ($user as $key => $value) {
+                Session::set($key, $value);
+            }
+
             $this->send();
         } else {
             (new Error('Invalid Credentials', 401))->send();
