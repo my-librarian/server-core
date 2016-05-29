@@ -13,6 +13,6 @@ class Book extends Handler {
             [$id]
         );
 
-        $this->send($result);
+        $this->send($result[0]);
     }
 }
