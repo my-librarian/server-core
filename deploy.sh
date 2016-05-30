@@ -6,6 +6,7 @@ if [ ! -z "$TRAVIS_TAG" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
   find lib -type f -exec curl -u $USER:$PASS $HOST/lib/ --ftp-create-dir -T {} \;
   curl -u $USER:$PASS $HOST/ --ftp-create-dir -T index.php
   curl -u $USER:$PASS $HOST/ --ftp-create-dir -T .htaccess
+  curl -u $USER:$PASS $HOST/ --ftp-create-dir -T version.ini
 else
   echo "This will not deploy!"
 fi
