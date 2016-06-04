@@ -12,4 +12,21 @@ class Subjects extends Handler {
 
         $this->send($result);
     }
+
+    public function getSubjectsChecklist() {
+
+        $subjects = $this->select(
+            'SELECT subjectid, name AS label FROM subjects ORDER BY name'
+        );
+
+        return array_map(
+            function ($subject) {
+
+                $subject['selected'] = FALSE;
+
+                return $subject;
+            },
+            $subjects
+        );
+    }
 }
