@@ -12,4 +12,21 @@ class Authors extends Handler {
 
         $this->send($result);
     }
+
+    public function getAuthorsChecklist() {
+
+        $authors = $this->select(
+            'SELECT authorid, name AS label FROM authors ORDER BY name'
+        );
+
+        return array_map(
+            function ($author) {
+
+                $author['selected'] = FALSE;
+
+                return $author;
+            },
+            $authors
+        );
+    }
 }
