@@ -105,9 +105,4 @@ class Books extends Handler {
 
         $this->send($response, TRUE);
     }
-
-    function post($book) {
-
-        
-    }
 }

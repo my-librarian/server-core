@@ -24,11 +24,14 @@ class Book extends Handler {
         $result = $result[0];
 
         $result['authors'] = $this->select(
-            'SELECT authorid, name FROM authors '.
+            'SELECT authorid, name FROM authors ' .
             'JOIN authorassoc USING(authorid) WHERE bookid = ?',
             [$id]
         );
 
         $this->send($result);
+    }
+
+    function post($book) {
     }
 }
