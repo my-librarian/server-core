@@ -37,4 +37,11 @@ class Author extends Handler {
 
         $this->send($result);
     }
+
+    function post($data) {
+
+        $id = $this->insert('authors', ['name'], [$data['author']]);
+
+        $this->send(['id' => $id]);
+    }
 }
