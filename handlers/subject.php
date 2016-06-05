@@ -35,4 +35,11 @@ class Subject extends Handler {
 
         $this->send($result);
     }
+
+    function post($data) {
+
+        $id = $this->insert('subjects', ['name'], [$data['subject']]);
+        
+        $this->send(['id' => $id]);
+    }
 }
