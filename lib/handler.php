@@ -15,9 +15,9 @@ class Handler extends Database {
         parent::__construct($db_host, $db_user, $db_pass, $db_name);
     }
 
-    public function send($result = []) {
+    public function send($result = [], $array = FALSE) {
 
-        if(count($result) === 0) {
+        if(count($result) === 0 && !$array) {
             $result = new \stdClass();
         }
         
