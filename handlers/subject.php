@@ -7,6 +7,16 @@ use lib\Handler;
 
 class Subject extends Handler {
 
+    public function delete($id) {
+
+        if ($id == 0) {
+            echo "here";
+            (new Error('Invalid Subject ID', 406))->send();
+        }
+
+        $this->send(['success' => $this->deleteRow('subjects', 'subjectid', $id)]);
+    }
+
     public function get($id) {
 
         $result = $this->select(

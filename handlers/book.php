@@ -36,6 +36,11 @@ class Book extends Handler {
         return $this->insert('books', $columns, $values);
     }
 
+    public function delete($id) {
+
+        $this->send(['success' => $this->deleteRow('books', 'bookid', $id)]);
+    }
+
     function get($id) {
 
         $result = $this->select(

@@ -7,6 +7,11 @@ use lib\Handler;
 
 class Author extends Handler {
 
+    public function delete($id) {
+
+        $this->send(['success' => $this->deleteRow('authors', 'authorid', $id)]);
+    }
+
     public function get($id) {
 
         $result = $this->select(

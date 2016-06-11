@@ -23,23 +23,22 @@ class Database {
         ], $bound_params);
     }
 
-    public function select($sql, $params = []) {
+    public function deleteRow($table, $idColumn, $idValue) {
 
-        $stmt = $this->mysqli->prepare($sql);
+        $stmt = $this->mysqli->prepare("DELETE FROM $table WHERE `$idColumn` = ?");
 
-        if (count($params)) {
-            $this->bindParams($stmt, $params);
+        if ($stmt) {
+            $this->bindParams($stmt, [$idValue]);
+
+            $stmt->execute();
+
+            if ($stmt->error) {
+                $_500 = new Error($stmt->error, 500);
+                $_500->send();
+            }
         }
-
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if (!$result) {
-            $_500 = new Error($stmt->error, 500);
-            $_500->send();
-        }
-
-        return $result->fetch_all(MYSQLI_ASSOC);
+        
+        return TRUE;
     }
 
     public function insert($table, $columns, $values) {
@@ -47,7 +46,7 @@ class Database {
         $columns = '`' . join('`,`', $columns) . '`';
         $valueHolders = substr(str_repeat('?,', count($values)), 0, -1);
 
-        $stmt = $this->mysqli->prepare("INSERT INTO $table ($columns) values ($valueHolders);");
+        $stmt = $this->mysqli->prepare("INSERT INTO $table ($columns) values ($valueHolders)");
 
         if ($stmt) {
             $this->bindParams($stmt, $values);
@@ -61,5 +60,26 @@ class Database {
         }
 
         return $this->mysqli->insert_id;
+    }
+
+    public function select($sql, $params = []) {
+
+        $stmt = $this->mysqli->prepare($sql);
+
+        if (count($params)) {
+            $this->bindParams($stmt, $params);
+        }
+
+        if ($stmt) {
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if (!$result) {
+                $_500 = new Error($stmt->error, 500);
+                $_500->send();
+            }
+
+            return $result->fetch_all(MYSQLI_ASSOC);
+        }
     }
 }
