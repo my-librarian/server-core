@@ -2,15 +2,11 @@
 
 namespace lib;
 
-class Database extends \mysqli {
+class Database {
 
-    public function __construct($db_host, $db_user, $db_pass, $db_name) {
+    public function __construct() {
 
-        parent::__construct($db_host, $db_user, $db_pass, $db_name);
-
-        if ($this->connect_error) {
-            (new Error($this->connect_error, 502))->send();
-        }
+        $this->mysqli = mysqli::getInstance();
     }
 
     private function bindParams(&$stmt, $params) {
@@ -29,7 +25,7 @@ class Database extends \mysqli {
 
     public function select($sql, $params = []) {
 
-        $stmt = $this->prepare($sql);
+        $stmt = $this->mysqli->prepare($sql);
 
         if (count($params)) {
             $this->bindParams($stmt, $params);
@@ -51,17 +47,19 @@ class Database extends \mysqli {
         $columns = '`' . join('`,`', $columns) . '`';
         $valueHolders = substr(str_repeat('?,', count($values)), 0, -1);
 
-        $stmt = $this->prepare("INSERT INTO $table ($columns) values ($valueHolders)");
+        $stmt = $this->mysqli->prepare("INSERT INTO $table ($columns) values ($valueHolders);");
 
-        $this->bindParams($stmt, $values);
+        if ($stmt) {
+            $this->bindParams($stmt, $values);
 
-        $stmt->execute();
+            $stmt->execute();
 
-        if ($stmt->error) {
-            $_500 = new Error($stmt->error, 500);
-            $_500->send();
+            if ($stmt->error) {
+                $_500 = new Error($stmt->error, 500);
+                $_500->send();
+            }
         }
 
-        return $this->insert_id;
+        return $this->mysqli->insert_id;
     }
 }
