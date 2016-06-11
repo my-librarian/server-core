@@ -38,9 +38,29 @@ class Author extends Handler {
         $this->send($result);
     }
 
+    public function insertAuthor($author, &$found = FALSE) {
+
+        $authorid = $this->select(
+            'SELECT authorid FROM authors WHERE LOWER(name) LIKE LOWER(?)',
+            [$author]
+        );
+
+        if (count($authorid) < 1) {
+            return $this->insert('authors', ['name'], [$author]);
+        } else {
+            $found = TRUE;
+
+            return $authorid[0]['authorid'];
+        }
+    }
+
     function post($data) {
 
-        $id = $this->insert('authors', ['name'], [$data['author']]);
+        $id = $this->insertAuthor($data['author'], $found);
+
+        if ($found) {
+            http_response_code(302);
+        }
 
         $this->send(['id' => $id]);
     }

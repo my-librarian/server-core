@@ -36,10 +36,30 @@ class Subject extends Handler {
         $this->send($result);
     }
 
+    public function insertSubject($subject, &$found = FALSE) {
+
+        $subjectid = $this->select(
+            'SELECT subjectid FROM subjects WHERE LOWER(name) LIKE LOWER(?)',
+            [$subject]
+        );
+
+        if (count($subjectid) < 1) {
+            return $this->insert('subjects', ['name'], [$subject]);
+        } else {
+            $found = TRUE;
+
+            return $subjectid[0]['subjectid'];
+        }
+    }
+
     function post($data) {
 
-        $id = $this->insert('subjects', ['name'], [$data['subject']]);
-        
+        $id = $this->insertSubject($data['subject'], $found);
+
+        if ($found) {
+            http_response_code(302);
+        }
+
         $this->send(['id' => $id]);
     }
 }
