@@ -86,21 +86,35 @@ class Books extends Handler {
         return array($subjectIds, $subjectQuery);
     }
 
+    private function getRackNoQuery($filters) {
+
+        $racks = array_values(array_filter($filters['racks'], function ($rack) {
+
+            return $rack['selected'];
+        }));
+
+        $racks = array_map(function ($rack) {
+
+            return '^r-' . $rack['label'] . '-';
+        }, $racks);
+
+        $rackNoQuery = array_fill(0, count($racks), 'LOWER(rackno) REGEXP ?');
+        $rackNoQuery = join(' OR ', $rackNoQuery);
+
+        return array($racks, $rackNoQuery);
+    }
+
     function put($filters) {
 
         list($authorIds, $authorQuery) = $this->getAuthorQuery($filters);
         list($subjectIds, $subjectQuery) = $this->getSubjectQuery($filters);
+        list($racks, $rackNoQuery) = $this->getRackNoQuery($filters);
 
-        if (strlen($authorQuery)) {
-            $WHERE = "WHERE ($authorQuery)";
-            $WHERE .= strlen($subjectQuery) ? " AND ($subjectQuery)" : '';
-        } else {
-            $WHERE = strlen($subjectQuery) ? "WHERE ($subjectQuery)" : '';
-        }
+        $WHERE = 'WHERE ' . join(' AND ', array_filter([$authorQuery, $subjectQuery, $rackNoQuery, 1]));
 
         $response = $this->select(
             "SELECT * FROM books JOIN authorassoc USING(bookid) $WHERE GROUP BY bookid ORDER BY title",
-            array_merge($authorIds, $subjectIds)
+            array_merge($authorIds, $subjectIds, $racks)
         );
 
         $this->send($response, TRUE);
