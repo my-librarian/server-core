@@ -13,6 +13,7 @@ class Books extends Handler {
 
         $response['authors'] = (new Authors())->getAuthorsChecklist();
         $response['subjects'] = (new Subjects())->getSubjectsChecklist();
+        $response['languages'] = (new Languages())->getLanguagesChecklist();
         $response['racks'] = array_map(
             function ($index) {
 
@@ -33,7 +34,7 @@ class Books extends Handler {
 
         $result = $this->select('SELECT * FROM books ORDER BY title');
 
-        $this->send($result);
+        $this->send($result, TRUE);
     }
 
     function get($command) {
@@ -104,17 +105,51 @@ class Books extends Handler {
         return array($racks, $rackNoQuery);
     }
 
+    private function getLanguageQuery($filters) {
+
+        $languages = array_values(array_filter($filters['languages'], function ($language) {
+
+            return $language['selected'];
+        }));
+
+        $languages = array_map(function ($language) {
+
+            return $language['label'];
+        }, $languages);
+
+        $languageQuery = array_fill(0, count($languages), 'language LIKE ?');
+        $languageQuery = join(' OR ', $languageQuery);
+
+        return array($languages, $languageQuery);
+    }
+
     function put($filters) {
 
         list($authorIds, $authorQuery) = $this->getAuthorQuery($filters);
         list($subjectIds, $subjectQuery) = $this->getSubjectQuery($filters);
         list($racks, $rackNoQuery) = $this->getRackNoQuery($filters);
+        list($languages, $languageNoQuery) = $this->getLanguageQuery($filters);
 
-        $WHERE = 'WHERE ' . join(' AND ', array_filter([$authorQuery, $subjectQuery, $rackNoQuery, 1]));
+        $queries = [
+            $authorQuery,
+            $subjectQuery,
+            $rackNoQuery,
+            $languageNoQuery,
+            1
+        ];
+
+        $params = array_merge(
+            $authorIds,
+            $subjectIds,
+            $racks,
+            $languages
+        );
+
+        $WHERE = 'WHERE ' . join(' AND ', array_filter($queries));
 
         $response = $this->select(
             "SELECT * FROM books JOIN authorassoc USING(bookid) $WHERE GROUP BY bookid ORDER BY title",
-            array_merge($authorIds, $subjectIds, $racks)
+            $params
         );
 
         $this->send($response, TRUE);
