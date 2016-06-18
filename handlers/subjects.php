@@ -10,7 +10,7 @@ class Subjects extends Handler {
 
         $result = $this->select('SELECT * FROM subjects ORDER BY name');
 
-        $this->send($result);
+        $this->send($result, TRUE);
     }
 
     public function getSubjectsChecklist() {

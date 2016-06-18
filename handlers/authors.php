@@ -10,7 +10,7 @@ class Authors extends Handler {
 
         $result = $this->select('SELECT * FROM authors ORDER BY name');
 
-        $this->send($result);
+        $this->send($result, TRUE);
     }
 
     public function getAuthorsChecklist() {
