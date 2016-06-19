@@ -32,14 +32,15 @@ class Subject extends Handler {
         $result = $result[0];
 
         $result['books'] = $this->select(
-            'SELECT bookid, title FROM books WHERE subjectid = ?',
+            'SELECT bookid, title FROM books JOIN subjectassoc USING(bookid) WHERE subjectid = ?',
             [$id]
         );
 
         $result['authors'] = $this->select(
-            'SELECT DISTINCT authorid, authors.name FROM authors ' .
+            'SELECT DISTINCT authors.* FROM authors ' .
             'JOIN authorassoc USING(authorid) ' .
-            'JOIN books USING(bookid) WHERE subjectid = ?',
+            'JOIN books USING(bookid) ' .
+            'JOIN subjectassoc USING(bookid) WHERE subjectid = ?',
             [$id]
         );
 

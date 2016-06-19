@@ -8,7 +8,7 @@ class Languages extends Handler {
 
     public function get() {
 
-        $result = $this->select('SELECT DISTINCT language FROM books WHERE language IS NOT NULL ORDER BY language');
+        $result = $this->select('SELECT DISTINCT language as name FROM books WHERE language IS NOT NULL ORDER BY language');
 
         $this->send($result, TRUE);
     }

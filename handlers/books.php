@@ -148,7 +148,7 @@ class Books extends Handler {
         $WHERE = 'WHERE ' . join(' AND ', array_filter($queries));
 
         $response = $this->select(
-            "SELECT * FROM books JOIN authorassoc USING(bookid) $WHERE GROUP BY bookid ORDER BY title",
+            "SELECT * FROM books JOIN authorassoc USING(bookid) JOIN subjectassoc USING(bookid) $WHERE GROUP BY bookid ORDER BY title",
             $params
         );
 

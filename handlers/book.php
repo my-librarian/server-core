@@ -22,9 +22,26 @@ class Book extends Handler {
 
     private function insertBook($data) {
 
-        $data['adddate'] = $this->formatDate($data['adddate']);
+        $data['acquisitiondate'] = $this->formatDate($data['acquisitiondate']);
+        $data['original'] = $data['original'] ? 1 : 0;
 
-        $columns = ['title', 'accessno', 'adddate', 'rackno', 'subjectid'];
+        $columns = [
+            'title',
+            'accessno',
+            'acquisitiondate',
+            'rackno',
+            'description',
+            'pages',
+            'year',
+            'language',
+            'isbn',
+            'cost',
+            'binding',
+            'original',
+            'source',
+            'condition'
+        ];
+
         $values = array_map(
             function ($column) use ($data) {
 
@@ -36,6 +53,14 @@ class Book extends Handler {
         return $this->insert('books', $columns, $values);
     }
 
+    private function insertSubjects($data, $bookid) {
+
+        foreach ($data['subjects'] as $subject) {
+            $subjectid = (new Subject())->insertSubject($subject['name']);
+            $this->insert('subjectassoc', ['bookid', 'subjectid'], [$bookid, $subjectid]);
+        }
+    }
+
     public function delete($id) {
 
         $this->send(['success' => $this->deleteRow('books', 'bookid', $id)]);
@@ -44,22 +69,29 @@ class Book extends Handler {
     function get($id) {
 
         $result = $this->select(
-            'SELECT *, subjects.name AS subject FROM books ' .
-            'JOIN subjects USING(subjectid) ' .
+            'SELECT * FROM books ' .
             'WHERE bookid = ?',
             [$id]
         );
 
         if (count($result) < 1) {
-            (new Error('Subject Not Found'))->send();
+            (new Error('Book Not Found'))->send();
             exit();
         }
 
         $result = $result[0];
 
+        $result['description'] = $result['description'] ?: '';
+
         $result['authors'] = $this->select(
             'SELECT authorid, name FROM authors ' .
             'JOIN authorassoc USING(authorid) WHERE bookid = ?',
+            [$id]
+        );
+
+        $result['subjects'] = $this->select(
+            'SELECT subjectid, name FROM subjects ' .
+            'JOIN subjectassoc USING(subjectid) WHERE bookid = ?',
             [$id]
         );
 
@@ -70,11 +102,10 @@ class Book extends Handler {
 
         $this->mysqli->autocommit(FALSE);
 
-        $data['subjectid'] = (new Subject())->insertSubject($data['subject']);
-
         $bookid = $this->insertBook($data);
 
         $this->insertAuthors($data, $bookid);
+        $this->insertSubjects($data, $bookid);
 
         if ($this->mysqli->errno) {
             $_500 = new Error($this->mysqli->error, 500);
