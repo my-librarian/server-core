@@ -1,7 +1,7 @@
 <?php
 
-//error_reporting(0);
-//header('Content-type: application/json');
+error_reporting(0);
+header('Content-type: application/json');
 
 function __autoload($class) {
 
