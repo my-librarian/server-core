@@ -23,7 +23,7 @@ class User extends Handler {
         $this->send(['id' => $id]);
     }
 
-    function get($deptNo, $pass) {
+    function get($deptNo, $pass, $session = FALSE) {
 
         $users = $this->select(
             'SELECT userid, deptno, name, level FROM users WHERE deptno=? AND password=?',
@@ -34,13 +34,21 @@ class User extends Handler {
 
             $user = $users[0];
 
-            foreach ($user as $key => $value) {
-                Session::set($key, $value);
+            if ($session) {
+
+                foreach ($user as $key => $value) {
+                    Session::set($key, $value);
+                }
             }
 
             $this->send();
         } else {
             (new Error('Invalid Credentials', 401))->send();
         }
+    }
+
+    function getUserIdFromDeptNo($deptNo) {
+
+        return $this->select('SELECT userid FROM users WHERE deptno = ? OR userid = ?', [$deptNo, $deptNo])[0]['userid'];
     }
 }
