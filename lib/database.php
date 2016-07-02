@@ -36,9 +36,12 @@ class Database {
                 $_500 = new Error($stmt->error, 500);
                 $_500->send();
             }
+
+            return TRUE;
         }
-        
-        return TRUE;
+
+        $_500 = new Error($this->mysqli->error, 500);
+        $_500->send();
     }
 
     public function insert($table, $columns, $values) {
@@ -81,5 +84,35 @@ class Database {
 
             return $result->fetch_all(MYSQLI_ASSOC);
         }
+
+        return [];
+    }
+
+    public function update($table, $columns, $values, $idColumn, $idValue) {
+
+        $fields = array_map(function ($column) {
+
+            return "`$column`=?";
+        }, $columns);
+        $fields = join(', ', $fields);
+
+        $stmt = $this->mysqli->prepare("update $table set $fields where `$idColumn`=?");
+
+        if ($stmt) {
+            array_push($values, $idValue);
+            $this->bindParams($stmt, $values);
+
+            $stmt->execute();
+
+            if ($stmt->error) {
+                $_500 = new Error($stmt->error, 500);
+                $_500->send();
+            }
+
+            return TRUE;
+        }
+
+        $_500 = new Error($this->mysqli->error, 500);
+        $_500->send();
     }
 }
