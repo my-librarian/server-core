@@ -95,6 +95,13 @@ class Book extends Handler {
             [$id]
         );
 
+        $borrowIds = $this->select(
+            'SELECT borrowid FROM borrow WHERE bookid = ? AND returndate IS NULL',
+            [$id]
+        );
+
+        $result['borrowid'] = count($borrowIds) > 0 ? $borrowIds[0]['borrowid'] : NULL;
+
         $this->send($result);
     }
 
