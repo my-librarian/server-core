@@ -24,15 +24,14 @@ class Books extends Handler {
             },
             range(1, 17)
         );
-        $response['borrowed'] = FALSE;
-        $response['available'] = FALSE;
+        $response['availability'] = 'all';
 
         $this->send($response);
     }
 
     private function listBooks() {
 
-        $result = $this->select('SELECT * FROM books ORDER BY title');
+        $result = $this->select('SELECT bookid, title FROM books ORDER BY title');
 
         $this->send($result, TRUE);
     }
@@ -67,6 +66,21 @@ class Books extends Handler {
         $authorQuery = join(' OR ', $authorQuery);
 
         return array($authorIds, $authorQuery);
+    }
+
+    private function getAvailabilityQuery($availability) {
+
+        $JOIN_BORROW = NULL;
+        $borrowQuery = NULL;
+
+        if ($availability == 'borrowed') {
+            $JOIN_BORROW = 'JOIN borrow USING(bookid)';
+            $borrowQuery = 'returndate IS NULL';
+        } elseif ($availability == 'available') {
+            $borrowQuery = 'bookid NOT IN (select bookid from borrow where returndate is null)';
+        }
+
+        return array($JOIN_BORROW, $borrowQuery);
     }
 
     private function getSubjectQuery($filters) {
@@ -129,12 +143,14 @@ class Books extends Handler {
         list($subjectIds, $subjectQuery) = $this->getSubjectQuery($filters);
         list($racks, $rackNoQuery) = $this->getRackNoQuery($filters);
         list($languages, $languageNoQuery) = $this->getLanguageQuery($filters);
+        list($JOIN_BORROW, $borrowQuery) = $this->getAvailabilityQuery($filters['availability']);
 
         $queries = [
             $authorQuery,
             $subjectQuery,
             $rackNoQuery,
             $languageNoQuery,
+            $borrowQuery,
             1
         ];
 
@@ -148,7 +164,11 @@ class Books extends Handler {
         $WHERE = 'WHERE ' . join(' AND ', array_filter($queries));
 
         $response = $this->select(
-            "SELECT * FROM books JOIN authorassoc USING(bookid) JOIN subjectassoc USING(bookid) $WHERE GROUP BY bookid ORDER BY title",
+            "SELECT bookid, title FROM books " .
+            "JOIN authorassoc USING(bookid) " .
+            "JOIN subjectassoc USING(bookid) " .
+            "$JOIN_BORROW " .
+            "$WHERE GROUP BY bookid ORDER BY title",
             $params
         );
 
