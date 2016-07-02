@@ -42,4 +42,9 @@ class Borrow extends Handler {
 
         $this->send(['id' => $id]);
     }
+
+    function put($borrowid, $receiverid) {
+
+        $this->update('borrow', ['receiverid', 'returndate'], [(new User())->getUserIdFromDeptNo($receiverid), date('Y-m-d H:i:s', time())], 'borrowid', $borrowid);
+    }
 }
