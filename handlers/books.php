@@ -7,6 +7,19 @@ use lib\Handler;
 
 class Books extends Handler {
 
+    private function listBorrowedBooks() {
+
+        $title = '(SELECT title FROM books b WHERE b.bookid = w.bookid) AS title';
+
+        $result = $this->select(
+            "SELECT bookid, borrowid, name username, deptno userDeptNo, borrowdate, $title FROM borrow w " .
+            "JOIN users USING(userid) " .
+            "WHERE w.returndate IS NULL"
+        );
+
+        $this->send($result);
+    }
+
     private function listFilters() {
 
         $response = [];
@@ -39,8 +52,9 @@ class Books extends Handler {
     function get($command) {
 
         $commands = [
-            'list' => 'listBooks',
-            'filters' => 'listFilters'
+            'borrowed' => 'listBorrowedBooks',
+            'filters' => 'listFilters',
+            'list' => 'listBooks'
         ];
 
         if (method_exists($this, $commands[$command])) {
@@ -70,17 +84,16 @@ class Books extends Handler {
 
     private function getAvailabilityQuery($availability) {
 
-        $JOIN_BORROW = NULL;
         $borrowQuery = NULL;
+        $in = 'IN (SELECT bookid FROM borrow WHERE returndate IS NULL)';
 
         if ($availability == 'borrowed') {
-            $JOIN_BORROW = 'JOIN borrow USING(bookid)';
-            $borrowQuery = 'returndate IS NULL';
+            $borrowQuery = "bookid $in";
         } elseif ($availability == 'available') {
-            $borrowQuery = 'bookid NOT IN (select bookid from borrow where returndate is null)';
+            $borrowQuery = "bookid NOT $in";
         }
 
-        return array($JOIN_BORROW, $borrowQuery);
+        return $borrowQuery;
     }
 
     private function getSubjectQuery($filters) {
@@ -143,7 +156,8 @@ class Books extends Handler {
         list($subjectIds, $subjectQuery) = $this->getSubjectQuery($filters);
         list($racks, $rackNoQuery) = $this->getRackNoQuery($filters);
         list($languages, $languageNoQuery) = $this->getLanguageQuery($filters);
-        list($JOIN_BORROW, $borrowQuery) = $this->getAvailabilityQuery($filters['availability']);
+
+        $borrowQuery = $this->getAvailabilityQuery($filters['availability']);
 
         $queries = [
             $authorQuery,
@@ -167,7 +181,6 @@ class Books extends Handler {
             "SELECT bookid, title FROM books " .
             "JOIN authorassoc USING(bookid) " .
             "JOIN subjectassoc USING(bookid) " .
-            "$JOIN_BORROW " .
             "$WHERE GROUP BY bookid ORDER BY title",
             $params
         );
