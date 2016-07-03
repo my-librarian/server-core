@@ -9,12 +9,14 @@ class Subject extends Handler {
 
     public function delete($id) {
 
-        if ($id == 0) {
-            echo "here";
-            (new Error('Invalid Subject ID', 406))->send();
-        }
+        $this->beginTransaction();
 
-        $this->send(['success' => $this->deleteRow('subjects', 'subjectid', $id)]);
+        $this->deleteRow('subjects', 'subjectid', $id);
+        $this->deleteRow('subjectassoc', 'subjectid', $id);
+
+        $this->endTransaction();
+
+        $this->send(['success' => TRUE]);
     }
 
     public function get($id) {

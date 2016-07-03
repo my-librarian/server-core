@@ -62,8 +62,16 @@ class Book extends Handler {
     }
 
     public function delete($id) {
+        
+        $this->beginTransaction();
 
-        $this->send(['success' => $this->deleteRow('books', 'bookid', $id)]);
+        $this->deleteRow('books', 'bookid', $id);
+        $this->deleteRow('authorassoc', 'bookid', $id);
+        $this->deleteRow('subjectassoc', 'bookid', $id);
+
+        $this->endTransaction();
+
+        $this->send(['success' => TRUE]);
     }
 
     function get($id) {

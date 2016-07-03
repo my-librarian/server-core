@@ -9,7 +9,14 @@ class Author extends Handler {
 
     public function delete($id) {
 
-        $this->send(['success' => $this->deleteRow('authors', 'authorid', $id)]);
+        $this->beginTransaction();
+
+        $this->deleteRow('authors', 'authorid', $id);
+        $this->deleteRow('authorassoc', 'authorid', $id);
+
+        $this->endTransaction();
+
+        $this->send(['success' => TRUE]);
     }
 
     public function get($id) {
