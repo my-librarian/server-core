@@ -11,6 +11,10 @@ class Database {
 
     private function bindParams(&$stmt, $params) {
 
+        if (!count($params)) {
+            return;
+        }
+
         $bound_params = [str_repeat('s', count($params))];
 
         for ($i = 0; $i < count($params); ++$i) {
@@ -23,6 +27,29 @@ class Database {
         ], $bound_params);
     }
 
+    private function throw500Error($error) {
+
+        if ($error) {
+            $_500 = new Error($error, 500);
+            $_500->send();
+        }
+    }
+
+    public function beginTransaction() {
+
+        $this->mysqli->autocommit(FALSE);
+    }
+
+    public function endTransaction() {
+
+        if ($this->mysqli->errno) {
+            $_500 = new Error($this->mysqli->error, 500);
+            $_500->send();
+        } else {
+            $this->mysqli->commit();
+        }
+    }
+
     public function deleteRow($table, $idColumn, $idValue) {
 
         $stmt = $this->mysqli->prepare("DELETE FROM $table WHERE `$idColumn` = ?");
@@ -31,17 +58,14 @@ class Database {
             $this->bindParams($stmt, [$idValue]);
 
             $stmt->execute();
-
-            if ($stmt->error) {
-                $_500 = new Error($stmt->error, 500);
-                $_500->send();
-            }
+            $this->throw500Error($stmt);
 
             return TRUE;
         }
 
-        $_500 = new Error($this->mysqli->error, 500);
-        $_500->send();
+        $this->throw500Error($this->mysqli->error);
+
+        return FALSE;
     }
 
     public function insert($table, $columns, $values) {
@@ -55,11 +79,7 @@ class Database {
             $this->bindParams($stmt, $values);
 
             $stmt->execute();
-
-            if ($stmt->error) {
-                $_500 = new Error($stmt->error, 500);
-                $_500->send();
-            }
+            $this->throw500Error($stmt->error);
         }
 
         return $this->mysqli->insert_id;
@@ -69,18 +89,14 @@ class Database {
 
         $stmt = $this->mysqli->prepare($sql);
 
-        if (count($params)) {
-            $this->bindParams($stmt, $params);
-        }
-
         if ($stmt) {
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $this->bindParams($stmt, $params);
 
-            if (!$result) {
-                $_500 = new Error($stmt->error, 500);
-                $_500->send();
-            }
+            $stmt->execute();
+            $this->throw500Error($stmt->error);
+
+            $result = $stmt->get_result();
+            $this->throw500Error(!$result);
 
             return $result->fetch_all(MYSQLI_ASSOC);
         }
@@ -103,16 +119,13 @@ class Database {
             $this->bindParams($stmt, $values);
 
             $stmt->execute();
-
-            if ($stmt->error) {
-                $_500 = new Error($stmt->error, 500);
-                $_500->send();
-            }
+            $this->throw500Error($stmt->error);
 
             return TRUE;
         }
 
-        $_500 = new Error($this->mysqli->error, 500);
-        $_500->send();
+        $this->throw500Error($this->mysqli->error);
+
+        return FALSE;
     }
 }

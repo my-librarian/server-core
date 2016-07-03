@@ -107,19 +107,14 @@ class Book extends Handler {
 
     function post($data) {
 
-        $this->mysqli->autocommit(FALSE);
+        $this->beginTransaction();
 
         $bookid = $this->insertBook($data);
 
         $this->insertAuthors($data, $bookid);
         $this->insertSubjects($data, $bookid);
 
-        if ($this->mysqli->errno) {
-            $_500 = new Error($this->mysqli->error, 500);
-            $_500->send();
-        } else {
-            $this->mysqli->commit();
-        }
+        $this->endTransaction();
 
         $this->send(['id' => $bookid]);
     }
