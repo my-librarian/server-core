@@ -58,7 +58,7 @@ class Database {
             $this->bindParams($stmt, [$idValue]);
 
             $stmt->execute();
-            $this->throw500Error($stmt);
+            $this->throw500Error($stmt->error);
 
             return TRUE;
         }
