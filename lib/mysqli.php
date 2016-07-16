@@ -6,10 +6,13 @@ class mysqli extends \mysqli {
 
     private static $instance;
 
+    public static $timezone_offset;
+
     public static function getInstance() {
 
         if (!mysqli::$instance) {
             mysqli::$instance = new mysqli();
+            mysqli::$timezone_offset = mysqli::$instance->query('SELECT TIMESTAMPDIFF(SECOND, UTC_TIMESTAMP, NOW())')->fetch_row()[0];
         }
 
         return mysqli::$instance;
