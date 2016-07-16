@@ -45,8 +45,18 @@ class Borrow extends Handler {
         $this->send(['id' => $id]);
     }
 
-    function put($borrowid, $receiverid) {
+    function put($borrowid, $receiverid, $data) {
 
-        $this->update('borrow', ['receiverid', 'returndate'], [(new User())->getUserIdFromDeptNo($receiverid), date('Y-m-d H:i:s', time() + mysqli::$timezone_offset)], 'borrowid', $borrowid);
+        $this->update(
+            'borrow',
+            ['receiverid', 'returndate', 'penalty'],
+            [
+                (new User())->getUserIdFromDeptNo($receiverid),
+                date('Y-m-d H:i:s', time() + mysqli::$timezone_offset),
+                $data['penalty']
+            ],
+            'borrowid',
+            $borrowid
+        );
     }
 }
