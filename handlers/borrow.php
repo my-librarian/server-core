@@ -3,6 +3,7 @@
 namespace handlers;
 
 use lib\Handler;
+use lib\mysqli;
 
 class Borrow extends Handler {
 
@@ -45,6 +46,6 @@ class Borrow extends Handler {
 
     function put($borrowid, $receiverid) {
 
-        $this->update('borrow', ['receiverid', 'returndate'], [(new User())->getUserIdFromDeptNo($receiverid), date('Y-m-d H:i:s', time())], 'borrowid', $borrowid);
+        $this->update('borrow', ['receiverid', 'returndate'], [(new User())->getUserIdFromDeptNo($receiverid), date('Y-m-d H:i:s', time() + mysqli::$timezone_offset)], 'borrowid', $borrowid);
     }
 }
