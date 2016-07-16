@@ -10,10 +10,11 @@ class Borrow extends Handler {
     function get($bookid) {
 
         $response = $this->select(
-            'SELECT b.name AS borrowerName, i.name AS issuerName, borrow.* FROM borrow ' .
+            'SELECT b.name AS borrowerName, i.name AS issuerName, r.name AS receiverName, borrow.* FROM borrow ' .
             'JOIN users b USING(userid) ' .
             'JOIN users i ON issuerid = i.userid ' .
-            'WHERE bookid = ? '.
+            'LEFT JOIN users r ON receiverid = r.userid ' .
+            'WHERE bookid = ? ' .
             'ORDER BY borrowdate DESC',
             [$bookid]
         );
