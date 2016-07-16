@@ -19,7 +19,7 @@ class Borrow extends Handler {
             [$bookid]
         );
 
-        $this->send($response);
+        $this->send($response, TRUE);
     }
 
     function getDueDate($timespan) {
