@@ -31,7 +31,7 @@ os_deploy() {
     mv ui-core/dist/* ./
     rm -rf ui-core
     git init
-    echo "api-version=$TRAVIS_TAG\nui-version=$lastRelease" > version.txt
+    echo "api-version=$TRAVIS_TAG, ui-version=$lastRelease" > version.txt
     git config --global user.email "vipranarayan14@gmail.com"
     git config --global user.name "Travis CI"
     git add --all
