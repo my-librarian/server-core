@@ -14,7 +14,9 @@ file_deploy() {
 }
 
 os_deploy() {
-    echo env=prod > lib/deploy.ini
+    echo "[openshift]\ndb_host=https://librarian-rkmvc.rhcloud.com" > lib/database.ini
+    echo "\ndb_user=$DB_USER\ndb_pass=$DB_PASS\ndb_name=$DB_NAME" >> lib/database.ini
+    echo env=openshift > lib/deploy.ini
     mkdir -p api
     mv handlers api/
     mv lib api/
