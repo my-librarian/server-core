@@ -23,6 +23,8 @@ os_deploy() {
     sh -c "ls -a | grep -v -E 'api|deploy.sh' | xargs rm -rf || true"
     git clone https://github.com/my-librarian/ui-core.git
     cd ui-core
+    lastRelease=$(git describe --tags --abbrev=0)
+    git checkout ${lastRelease}
     npm i
     npm run build
     cd ..
