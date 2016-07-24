@@ -21,7 +21,7 @@ os_deploy() {
     mv index.php api/
     mv .htaccess api/
     sh -c "ls -a | grep -v -E 'api|deploy.sh' | xargs rm -rf || true"
-    git clone git@github.com:my-librarian/ui-core.git
+    git clone https://github.com/my-librarian/ui-core.git
     cd ui-core
     npm i
     npm run build
