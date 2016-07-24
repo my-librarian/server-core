@@ -5,8 +5,18 @@ env:
   - secure: I/3hSWMvlvoWq74cSuoa6DsUNmTOVGwi9fUPuZR0hO86+Ffx07l7H7RniGu60TE7z5iczYcZ1+903CsTX+SpNLT0S42VR/A9rjy6QxB28gw11BaR3pw2CsNiVgMsX05tSc1AwaAhz2L7YTHCWzfK5y/Poiq6rKW9SXcjfwpBir431P+UV6lgYW7zdlxu3JqCcnyFIbE70ByEnJTF8zS3ZxPecn9LrtAz+TIUPZQgTGOD8VM9PKUFJi43URThdSQlaNYBXENeW1lGzqs5ixmtU91L1yPBqjOYawoPSjKSh5Smfnw1NhZX7HS0iXtn7gP1Ybq179ftVHYPBgUGgA3e7Sws1YQ3utJXnw5e6P6Rd51VHbk0XFlWfIQsNiyx1pmFOAvvY6QtzaUS3USvPAk6pzvPb4TgIijvziX+o+u89P1I0YsDdqUJNTNoPhp6YRNe0TjeGigR4qibYc+KIV+dVqC9fcF88b6toy98HiYNOgBU6utj3TV8cuLyz0gR6cvPvRyij+ROnx/l+USzMpMLmnNnbZx+Ats9snGsi2BOcMJ6Azabwl0TrP7+BHyJbsnqlmW4tE9Zsqxg3uq/j+0Rs3mLagNe+YnGfjajHU10Cvj4BVR0Lzck1t1B7LL5mMAp9jBJ91NsYDXEQ1C0UIwjamARaBiJQYr6kwGhG2z6rEg=
 language: php
 php:
-- '5.6'
+  - '5.6'
 after_success:
-  sh deploy.sh
-script:
-  echo "YAY!!"
+  - . deploy.sh ; file_deploy
+script: echo "YAY!!"
+before_deploy:
+  - . deploy.sh ; os_deploy
+deploy:
+  provider: openshift
+  user: vipranarayan14@gmail.com
+  password:
+    secure: BKhJZJ+PgzWDzwsUxrWP0Er1BdcDVwLVZlyggdl7QS9zm5RMRW3Ghn+iqDA4J8ceXK2cYC21TM9NaCQgUXziZUWAEK9CTNOUoQec2t77UT0Ztg8XjGlCgjYA1rf/j8vesWRurasT46CqSl7OgaJlWt80vqb7AhACQefkArg0UO/1yu0mJjCYHJx3kHePRvXzN2aupAmpwaP6O9F3IVyBTBrL84uiIftB+acRDGwK04leuBVKh1yqMjqOyEIOR5wlN7fCELcggDccDys4plRIqxvgMXRZMWBKM8iBhGiNiIQqVeDjZxzpeWuxH0ZXMFgg2jDTg7E8qiwFA0/t8srF2WGAWFdisteCdeoPA8ont1ol7UeLHMW2aAKHA1pKy9lA86Q22B2YxS1S3WRGVESFVbsrxW6/Te7SjnQqgTik5a6PXm3YNtKl5mAkrhd4daerXUfyohKPt1u/noTClGS3vqhm+J/Llr27CfZ21zVECEFwKVntJ7wyq4Wu1G8nleFHhz26FpYdR7yJZLYSMBLY3IiOYuDhJzUPNiMUCFwaaIiMjO2WlHVteyKVxLwCU97+MQjx6IRKqcJVRogrsyQrK+ORtHJCPs2I+KKS7quy6q7Voe6hcBn+V+HPWSLdZtj/HzgLR6BosYk5S4iWVp32vb/xBg/ywxTNlWIHhNNXeZk=
+  app: librarian
+  domain: rkmvc
+  on:
+    repo: my-librarian/server-core
