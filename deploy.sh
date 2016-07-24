@@ -14,12 +14,20 @@ file_deploy() {
 }
 
 os_deploy() {
+    echo env=prod > lib/deploy.ini
     mkdir -p api
     mv handlers api/
     mv lib api/
     mv index.php api/
     mv .htaccess api/
     sh -c "ls -a | grep -v -E 'api|deploy.sh' | xargs rm -rf || true"
+    git clone git@github.com:my-librarian/ui-core.git
+    cd ui-core
+    npm i
+    npm run build
+    cd ..
+    mv ui-core/dist/* ./
+    rm -rf ui-core
     git init
     echo "$TRAVIS_TAG" > version.txt
     git config --global user.email "vipranarayan14@gmail.com"
