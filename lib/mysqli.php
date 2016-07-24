@@ -21,10 +21,18 @@ class mysqli extends \mysqli {
     function __construct() {
 
         $env = parse_ini_file('deploy.ini')['env'];
-        $dbConfig = parse_ini_file('database.ini', TRUE)[$env];
-
         $db_host = $db_user = $db_pass = $db_name = '';
-        extract($dbConfig);
+
+        if ($env === 'openshift') {
+            $osPrefix = 'OPENSHIFT_MYSQL_DB_';
+            $db_host = getenv("${osPrefix}HOST");
+            $db_user = getenv("${osPrefix}USERNAME");
+            $db_pass = getenv("${osPrefix}PASSWORD");
+            $db_name = 'librarian';
+        } else {
+            $dbConfig = parse_ini_file('database.ini', TRUE)[$env];
+            extract($dbConfig);
+        }
 
         parent::__construct($db_host, $db_user, $db_pass, $db_name);
     }
