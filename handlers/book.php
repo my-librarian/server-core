@@ -105,7 +105,7 @@ class Book extends Handler {
             [$id]
         );
 
-        $borrowerId = Session::get('userid');
+        $borrowerId = \lib\Session::get('userid');
 
         $borrowIds = $this->select(
             'SELECT borrowid, userid FROM borrow WHERE bookid = ? AND returndate IS NULL',
