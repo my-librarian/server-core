@@ -9,6 +9,8 @@ class Subject extends Handler {
 
     public function delete($id) {
 
+        Session::verifyAuthentication(2);
+
         $this->beginTransaction();
 
         $this->deleteRow('subjects', 'subjectid', $id);
@@ -66,6 +68,8 @@ class Subject extends Handler {
     }
 
     function post($data) {
+
+        Session::verifyAuthentication(2);
 
         $id = $this->insertSubject($data['subject'], $found);
 

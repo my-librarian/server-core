@@ -9,6 +9,8 @@ class Author extends Handler {
 
     public function delete($id) {
 
+        Session::verifyAuthentication(2);
+
         $this->beginTransaction();
 
         $this->deleteRow('authors', 'authorid', $id);
@@ -67,6 +69,8 @@ class Author extends Handler {
     }
 
     function post($data) {
+
+        Session::verifyAuthentication(2);
 
         $id = $this->insertAuthor($data['author'], $found);
 

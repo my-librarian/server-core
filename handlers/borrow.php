@@ -9,6 +9,8 @@ class Borrow extends Handler {
 
     function get($bookid) {
 
+        Session::verifyAuthentication(2);
+
         $response = $this->select(
             'SELECT b.name AS borrowerName, i.name AS issuerName, r.name AS receiverName, borrow.* FROM borrow ' .
             'JOIN users b USING(userid) ' .
@@ -33,6 +35,8 @@ class Borrow extends Handler {
 
     function post($data) {
 
+        Session::verifyAuthentication(1);
+
         $values = [
             (new User())->getUserIdFromDeptNo($data['userid']),
             (new User())->getUserIdFromDeptNo($data['issuerid']),
@@ -46,6 +50,8 @@ class Borrow extends Handler {
     }
 
     function put($borrowid, $receiverid, $data) {
+
+        Session::verifyAuthentication(1);
 
         $this->update(
             'borrow',

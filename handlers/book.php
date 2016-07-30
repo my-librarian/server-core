@@ -62,7 +62,9 @@ class Book extends Handler {
     }
 
     public function delete($id) {
-        
+
+        Session::verifyAuthentication(2);
+
         $this->beginTransaction();
 
         $this->deleteRow('books', 'bookid', $id);
@@ -103,17 +105,24 @@ class Book extends Handler {
             [$id]
         );
 
+        $borrowerId = Session::get('userid');
+
         $borrowIds = $this->select(
-            'SELECT borrowid FROM borrow WHERE bookid = ? AND returndate IS NULL',
+            'SELECT borrowid, userid FROM borrow WHERE bookid = ? AND returndate IS NULL',
             [$id]
         );
 
-        $result['borrowid'] = count($borrowIds) > 0 ? $borrowIds[0]['borrowid'] : NULL;
+        if (count($borrowIds) > 0) {
+            $result['borrowid'] = $borrowIds[0]['borrowid'];
+            $result['borrowedByCurrentUser'] = $borrowIds[0]['userid'] === $borrowerId;
+        }
 
         $this->send($result);
     }
 
     function post($data) {
+
+        Session::verifyAuthentication(2);
 
         $this->beginTransaction();
 
