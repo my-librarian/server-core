@@ -79,4 +79,11 @@ class Subject extends Handler {
 
         $this->send(['id' => $id]);
     }
+
+    function put($subject) {
+
+        Session::verifyAuthentication(2);
+
+        $this->update('subjects', ['name'], [$subject['name']], 'subjectid', $subject['subjectid']);
+    }
 }
