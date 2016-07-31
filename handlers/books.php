@@ -44,7 +44,7 @@ class Books extends Handler {
 
     private function listBooks() {
 
-        $result = $this->select('SELECT bookid, title FROM books ORDER BY title');
+        $result = $this->select('SELECT bookid, title, rackno, accessno FROM books ORDER BY title');
 
         $this->send($result, TRUE);
     }
