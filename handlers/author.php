@@ -80,4 +80,11 @@ class Author extends Handler {
 
         $this->send(['id' => $id]);
     }
+
+    function put($author) {
+
+        Session::verifyAuthentication(2);
+
+        $this->update('authors', ['name'], [$author['name']], 'authorid', $author['authorid']);
+    }
 }
