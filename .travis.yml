@@ -10,10 +10,10 @@ after_success:
   - . deploy.sh ; file_deploy
 script: echo "YAY!!"
 before_deploy:
-  - rvm 1.9.3 do gem install net-ssh -v 2.9.2
   - . deploy.sh ; os_deploy
 deploy:
   provider: openshift
+  edge: true
   user: vipranarayan14@gmail.com
   password:
     secure: BKhJZJ+PgzWDzwsUxrWP0Er1BdcDVwLVZlyggdl7QS9zm5RMRW3Ghn+iqDA4J8ceXK2cYC21TM9NaCQgUXziZUWAEK9CTNOUoQec2t77UT0Ztg8XjGlCgjYA1rf/j8vesWRurasT46CqSl7OgaJlWt80vqb7AhACQefkArg0UO/1yu0mJjCYHJx3kHePRvXzN2aupAmpwaP6O9F3IVyBTBrL84uiIftB+acRDGwK04leuBVKh1yqMjqOyEIOR5wlN7fCELcggDccDys4plRIqxvgMXRZMWBKM8iBhGiNiIQqVeDjZxzpeWuxH0ZXMFgg2jDTg7E8qiwFA0/t8srF2WGAWFdisteCdeoPA8ont1ol7UeLHMW2aAKHA1pKy9lA86Q22B2YxS1S3WRGVESFVbsrxW6/Te7SjnQqgTik5a6PXm3YNtKl5mAkrhd4daerXUfyohKPt1u/noTClGS3vqhm+J/Llr27CfZ21zVECEFwKVntJ7wyq4Wu1G8nleFHhz26FpYdR7yJZLYSMBLY3IiOYuDhJzUPNiMUCFwaaIiMjO2WlHVteyKVxLwCU97+MQjx6IRKqcJVRogrsyQrK+ORtHJCPs2I+KKS7quy6q7Voe6hcBn+V+HPWSLdZtj/HzgLR6BosYk5S4iWVp32vb/xBg/ywxTNlWIHhNNXeZk=
