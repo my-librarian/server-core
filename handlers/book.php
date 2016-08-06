@@ -146,6 +146,8 @@ class Book extends Handler {
 
     public function put($id, $data) {
 
+        Session::verifyAuthentication(2);
+
         $this->beginTransaction();
 
         list($columns, $values) = $this->mapBookColumns($data);
