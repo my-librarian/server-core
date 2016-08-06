@@ -10,7 +10,9 @@ after_success:
   - . deploy.sh ; file_deploy
 script: echo "YAY!!"
 before_deploy:
-  - rvm install 2.1.1 && rvm use 2.1.1
+  - rvm install 2.1.1
+  - rvm use 2.1.1
+  - ruby -v
   - . deploy.sh ; os_deploy
 deploy:
   provider: openshift
