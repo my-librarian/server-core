@@ -10,9 +10,7 @@ after_success:
   - . deploy.sh ; file_deploy
 script: echo "YAY!!"
 before_deploy:
-  - rvm install 2.1.1
-  - rvm use 2.1.1
-  - ruby -v
+  - rvm 1.9.3 do gem install net-ssh -v 2.9.2
   - . deploy.sh ; os_deploy
 deploy:
   provider: openshift
