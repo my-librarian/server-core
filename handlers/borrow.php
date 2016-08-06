@@ -41,10 +41,11 @@ class Borrow extends Handler {
             (new User())->getUserIdFromDeptNo($data['userid']),
             (new User())->getUserIdFromDeptNo($data['issuerid']),
             $data['bookid'],
-            $this->getDueDate($data['timespan'])
+            $this->getDueDate($data['timespan']),
+            gmdate('Y-m-d H:i:s')
         ];
 
-        $id = $this->insert('borrow', ['userid', 'issuerid', 'bookid', 'duedate'], $values);
+        $id = $this->insert('borrow', ['userid', 'issuerid', 'bookid', 'duedate', 'borrowdate'], $values);
 
         $this->send(['id' => $id]);
     }
@@ -58,7 +59,7 @@ class Borrow extends Handler {
             ['receiverid', 'returndate', 'penalty'],
             [
                 (new User())->getUserIdFromDeptNo($receiverid),
-                date('Y-m-d H:i:s', time() + mysqli::$timezone_offset),
+                gmdate('Y-m-d H:i:s'),
                 $data['penalty']
             ],
             'borrowid',
