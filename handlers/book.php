@@ -22,8 +22,24 @@ class Book extends Handler {
 
     private function insertBook($data) {
 
-        $data['acquisitiondate'] = $this->formatDate($data['acquisitiondate']);
         $data['original'] = $data['original'] ? 1 : 0;
+
+        list($columns, $values) = $this->mapBookColumns($data);
+
+        return $this->insert('books', $columns, $values);
+    }
+
+    private function insertSubjects($data, $bookid) {
+
+        foreach ($data['subjects'] as $subject) {
+            $subjectid = (new Subject())->insertSubject($subject['name']);
+            $this->insert('subjectassoc', ['bookid', 'subjectid'], [$bookid, $subjectid]);
+        }
+    }
+
+    private function mapBookColumns($data) {
+
+        $data['acquisitiondate'] = $this->formatDate($data['acquisitiondate']);
 
         $columns = [
             'title',
@@ -50,15 +66,7 @@ class Book extends Handler {
             $columns
         );
 
-        return $this->insert('books', $columns, $values);
-    }
-
-    private function insertSubjects($data, $bookid) {
-
-        foreach ($data['subjects'] as $subject) {
-            $subjectid = (new Subject())->insertSubject($subject['name']);
-            $this->insert('subjectassoc', ['bookid', 'subjectid'], [$bookid, $subjectid]);
-        }
+        return [$columns, $values];
     }
 
     public function delete($id) {
@@ -76,7 +84,7 @@ class Book extends Handler {
         $this->send(['success' => TRUE]);
     }
 
-    function get($id) {
+    public function get($id) {
 
         $result = $this->select(
             'SELECT * FROM books ' .
@@ -120,7 +128,7 @@ class Book extends Handler {
         $this->send($result);
     }
 
-    function post($data) {
+    public function post($data) {
 
         Session::verifyAuthentication(2);
 
@@ -134,5 +142,24 @@ class Book extends Handler {
         $this->endTransaction();
 
         $this->send(['id' => $bookid]);
+    }
+
+    public function put($id, $data) {
+
+        $this->beginTransaction();
+
+        list($columns, $values) = $this->mapBookColumns($data);
+
+        $this->update('books', $columns, $values, 'bookid', $id);
+
+        $this->deleteRow('authorassoc', 'bookid', $id);
+        $this->deleteRow('subjectassoc', 'bookid', $id);
+
+        $this->insertAuthors($data, $id);
+        $this->insertSubjects($data, $id);
+
+        $this->endTransaction();
+
+        $this->send();
     }
 }
