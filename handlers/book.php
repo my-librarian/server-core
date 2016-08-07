@@ -14,8 +14,15 @@ class Book extends Handler {
 
     private function insertAuthors($data, $bookid) {
 
-        foreach ($data['authors'] as $author) {
-            $authorid = (new Author())->insertAuthor($author['name']);
+        $authors = array_map(function ($author) {
+
+            return $author['name'];
+        }, $data['authors']);
+
+        $authors = array_unique($authors);
+
+        foreach ($authors as $author) {
+            $authorid = (new Author())->insertAuthor($author);
             $this->insert('authorassoc', ['bookid', 'authorid'], [$bookid, $authorid]);
         }
     }
@@ -31,8 +38,15 @@ class Book extends Handler {
 
     private function insertSubjects($data, $bookid) {
 
-        foreach ($data['subjects'] as $subject) {
-            $subjectid = (new Subject())->insertSubject($subject['name']);
+        $subjects = array_map(function ($subject) {
+
+            return $subject['name'];
+        }, $data['subjects']);
+
+        $subjects = array_unique($subjects);
+
+        foreach ($subjects as $subject) {
+            $subjectid = (new Subject())->insertSubject($subject);
             $this->insert('subjectassoc', ['bookid', 'subjectid'], [$bookid, $subjectid]);
         }
     }
