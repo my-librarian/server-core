@@ -179,8 +179,8 @@ class Books extends Handler {
 
         $response = $this->select(
             "SELECT bookid, title, rackno, accessno FROM books " .
-            "JOIN authorassoc USING(bookid) " .
-            "JOIN subjectassoc USING(bookid) " .
+            "LEFT JOIN authorassoc USING(bookid) " .
+            "LEFT JOIN subjectassoc USING(bookid) " .
             "$WHERE GROUP BY bookid ORDER BY title",
             $params
         );
