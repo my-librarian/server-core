@@ -7,6 +7,114 @@ use lib\Handler;
 
 class Books extends Handler {
 
+    private function getAuthorQuery($filters) {
+
+        $authors = array_values(array_filter($filters['authors'], function ($author) {
+
+            return $author['selected'];
+        }));
+
+        $authorIds = array_map(function ($author) {
+
+            return $author['authorid'];
+        }, $authors);
+
+        $authorQuery = array_fill(0, count($authorIds), 'authorid=?');
+        $authorQuery = join(' OR ', $authorQuery);
+        $authorQuery = $this->wrapQuery($authorQuery);
+
+        return array($authorIds, $authorQuery);
+    }
+
+    private function getAvailabilityQuery($availability) {
+
+        $borrowQuery = NULL;
+        $in = 'IN (SELECT bookid FROM borrow WHERE returndate IS NULL)';
+
+        if ($availability == 'borrowed') {
+            $borrowQuery = "bookid $in";
+        } elseif ($availability == 'available') {
+            $borrowQuery = "bookid NOT $in";
+        }
+
+        return $borrowQuery;
+    }
+
+    private function getLanguageQuery($filters) {
+
+        $languages = array_values(array_filter($filters['languages'], function ($language) {
+
+            return $language['selected'];
+        }));
+
+        $languages = array_map(function ($language) {
+
+            return $language['label'];
+        }, $languages);
+
+        $languageQuery = array_fill(0, count($languages), 'language LIKE ?');
+        $languageQuery = join(' OR ', $languageQuery);
+        $languageQuery = $this->wrapQuery($languageQuery);
+
+        return array($languages, $languageQuery);
+    }
+
+    private function getPageLimit($page) {
+
+        $PAGE_SIZE = 20;
+        $page = $page - 1;
+
+        return [$PAGE_SIZE * $page, $PAGE_SIZE];
+    }
+
+    private function getRackNoQuery($filters) {
+
+        $racks = array_values(array_filter($filters['racks'], function ($rack) {
+
+            return $rack['selected'];
+        }));
+
+        $racks = array_map(function ($rack) {
+
+            return '^r-' . $rack['label'] . '-';
+        }, $racks);
+
+        $rackNoQuery = array_fill(0, count($racks), 'LOWER(rackno) REGEXP ?');
+        $rackNoQuery = join(' OR ', $rackNoQuery);
+        $rackNoQuery = $this->wrapQuery($rackNoQuery);
+
+        return array($racks, $rackNoQuery);
+    }
+
+    private function getSubjectQuery($filters) {
+
+        $subjects = array_values(array_filter($filters['subjects'], function ($subject) {
+
+            return $subject['selected'];
+        }));
+
+        $subjectIds = array_map(function ($subject) {
+
+            return $subject['subjectid'];
+        }, $subjects);
+
+        $subjectQuery = array_fill(0, count($subjectIds), 'subjectid=?');
+        $subjectQuery = join(' OR ', $subjectQuery);
+        $subjectQuery = $this->wrapQuery($subjectQuery);
+
+        return array($subjectIds, $subjectQuery);
+    }
+
+    private function listBooks() {
+
+        $result = $this->select(
+            'SELECT bookid, title, rackno, accessno FROM books ORDER BY title LIMIT ?, ?',
+            $this->getPageLimit(1)
+        );
+
+        $this->send($result, TRUE);
+    }
+
     private function listBorrowedBooks() {
 
         $title = '(SELECT title FROM books b WHERE b.bookid = w.bookid) AS title';
@@ -38,18 +146,17 @@ class Books extends Handler {
             range(1, 17)
         );
         $response['availability'] = 'all';
+        $response['page'] = 1;
 
         $this->send($response);
     }
 
-    private function listBooks() {
+    private function wrapQuery($query) {
 
-        $result = $this->select('SELECT bookid, title, rackno, accessno FROM books ORDER BY title');
-
-        $this->send($result, TRUE);
+        return strlen(trim($query)) ? "($query)" : $query;
     }
 
-    function get($command) {
+    public function get($command) {
 
         $commands = [
             'borrowed' => 'listBorrowedBooks',
@@ -64,93 +171,7 @@ class Books extends Handler {
         }
     }
 
-    private function getAuthorQuery($filters) {
-
-        $authors = array_values(array_filter($filters['authors'], function ($author) {
-
-            return $author['selected'];
-        }));
-
-        $authorIds = array_map(function ($author) {
-
-            return $author['authorid'];
-        }, $authors);
-
-        $authorQuery = array_fill(0, count($authorIds), 'authorid=?');
-        $authorQuery = join(' OR ', $authorQuery);
-
-        return array($authorIds, $authorQuery);
-    }
-
-    private function getAvailabilityQuery($availability) {
-
-        $borrowQuery = NULL;
-        $in = 'IN (SELECT bookid FROM borrow WHERE returndate IS NULL)';
-
-        if ($availability == 'borrowed') {
-            $borrowQuery = "bookid $in";
-        } elseif ($availability == 'available') {
-            $borrowQuery = "bookid NOT $in";
-        }
-
-        return $borrowQuery;
-    }
-
-    private function getSubjectQuery($filters) {
-
-        $subjects = array_values(array_filter($filters['subjects'], function ($subject) {
-
-            return $subject['selected'];
-        }));
-
-        $subjectIds = array_map(function ($subject) {
-
-            return $subject['subjectid'];
-        }, $subjects);
-
-        $subjectQuery = array_fill(0, count($subjectIds), 'subjectid=?');
-        $subjectQuery = join(' OR ', $subjectQuery);
-
-        return array($subjectIds, $subjectQuery);
-    }
-
-    private function getRackNoQuery($filters) {
-
-        $racks = array_values(array_filter($filters['racks'], function ($rack) {
-
-            return $rack['selected'];
-        }));
-
-        $racks = array_map(function ($rack) {
-
-            return '^r-' . $rack['label'] . '-';
-        }, $racks);
-
-        $rackNoQuery = array_fill(0, count($racks), 'LOWER(rackno) REGEXP ?');
-        $rackNoQuery = join(' OR ', $rackNoQuery);
-
-        return array($racks, $rackNoQuery);
-    }
-
-    private function getLanguageQuery($filters) {
-
-        $languages = array_values(array_filter($filters['languages'], function ($language) {
-
-            return $language['selected'];
-        }));
-
-        $languages = array_map(function ($language) {
-
-            return $language['label'];
-        }, $languages);
-
-        $languageQuery = array_fill(0, count($languages), 'language LIKE ?');
-        $languageQuery = join(' OR ', $languageQuery);
-
-        return array($languages, $languageQuery);
-    }
-
-    function put($filters) {
+    public function put($filters) {
 
         list($authorIds, $authorQuery) = $this->getAuthorQuery($filters);
         list($subjectIds, $subjectQuery) = $this->getSubjectQuery($filters);
@@ -158,6 +179,7 @@ class Books extends Handler {
         list($languages, $languageNoQuery) = $this->getLanguageQuery($filters);
 
         $borrowQuery = $this->getAvailabilityQuery($filters['availability']);
+        $pageLimit = $this->getPageLimit($filters['page']);
 
         $queries = [
             $authorQuery,
@@ -172,7 +194,8 @@ class Books extends Handler {
             $authorIds,
             $subjectIds,
             $racks,
-            $languages
+            $languages,
+            $pageLimit
         );
 
         $WHERE = 'WHERE ' . join(' AND ', array_filter($queries));
@@ -181,7 +204,8 @@ class Books extends Handler {
             "SELECT bookid, title, rackno, accessno FROM books " .
             "LEFT JOIN authorassoc USING(bookid) " .
             "LEFT JOIN subjectassoc USING(bookid) " .
-            "$WHERE GROUP BY bookid ORDER BY title",
+            "$WHERE GROUP BY bookid ORDER BY title " .
+            "LIMIT ?, ?",
             $params
         );
 
