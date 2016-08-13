@@ -10,6 +10,7 @@ class mysqli extends \mysqli {
 
         if (!mysqli::$instance) {
             mysqli::$instance = new mysqli();
+            mysqli::$instance->set_charset('utf8');
         }
 
         return mysqli::$instance;
