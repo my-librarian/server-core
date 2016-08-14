@@ -86,6 +86,22 @@ class Books extends Handler {
         return array($racks, $rackNoQuery);
     }
 
+    private function getStaticQuery($searchString) {
+
+        $queries = [
+            "LOWER(books.title) LIKE ?",
+            "LOWER(books.accessno) LIKE ?",
+            "LOWER(books.rackno) LIKE ?"
+        ];
+
+        $searchString = strtolower("%$searchString%");
+        $staticQuery = join(' OR ', $queries);
+        $staticQuery = $this->wrapQuery($staticQuery);
+        $staticParams = array_fill(0, count($queries), $searchString);
+
+        return [$staticParams, $staticQuery];
+    }
+
     private function getSubjectQuery($filters) {
 
         $subjects = array_values(array_filter($filters['subjects'], function ($subject) {
@@ -103,16 +119,6 @@ class Books extends Handler {
         $subjectQuery = $this->wrapQuery($subjectQuery);
 
         return array($subjectIds, $subjectQuery);
-    }
-
-    private function listBooks() {
-
-        $result = $this->select(
-            'SELECT bookid, title, rackno, accessno FROM books ORDER BY title LIMIT ?, ?',
-            $this->getPageLimit(1)
-        );
-
-        $this->send($result, TRUE);
     }
 
     private function listBorrowedBooks() {
@@ -160,8 +166,7 @@ class Books extends Handler {
 
         $commands = [
             'borrowed' => 'listBorrowedBooks',
-            'filters' => 'listFilters',
-            'list' => 'listBooks'
+            'filters' => 'listFilters'
         ];
 
         if (method_exists($this, $commands[$command])) {
@@ -176,7 +181,8 @@ class Books extends Handler {
         list($authorIds, $authorQuery) = $this->getAuthorQuery($filters);
         list($subjectIds, $subjectQuery) = $this->getSubjectQuery($filters);
         list($racks, $rackNoQuery) = $this->getRackNoQuery($filters);
-        list($languages, $languageNoQuery) = $this->getLanguageQuery($filters);
+        list($languages, $languageQuery) = $this->getLanguageQuery($filters);
+        list($staticParams, $staticQuery) = $this->getStaticQuery($filters['searchString']);
 
         $borrowQuery = $this->getAvailabilityQuery($filters['availability']);
         $pageLimit = $this->getPageLimit($filters['page']);
@@ -185,9 +191,9 @@ class Books extends Handler {
             $authorQuery,
             $subjectQuery,
             $rackNoQuery,
-            $languageNoQuery,
+            $languageQuery,
             $borrowQuery,
-            1
+            $staticQuery
         ];
 
         $params = array_merge(
@@ -195,6 +201,7 @@ class Books extends Handler {
             $subjectIds,
             $racks,
             $languages,
+            $staticParams,
             $pageLimit
         );
 
