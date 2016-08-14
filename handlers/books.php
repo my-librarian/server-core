@@ -91,13 +91,17 @@ class Books extends Handler {
         $queries = [
             "LOWER(books.title) LIKE ?",
             "LOWER(books.accessno) LIKE ?",
-            "LOWER(books.rackno) LIKE ?"
+            "LOWER(REPLACE(books.rackno, '-', '')) LIKE ?"
         ];
 
         $searchString = strtolower("%$searchString%");
         $staticQuery = join(' OR ', $queries);
         $staticQuery = $this->wrapQuery($staticQuery);
-        $staticParams = array_fill(0, count($queries), $searchString);
+        $staticParams = [
+            $searchString,
+            $searchString,
+            str_replace('-', '', $searchString)
+        ];
 
         return [$staticParams, $staticQuery];
     }
@@ -183,9 +187,9 @@ class Books extends Handler {
         list($racks, $rackNoQuery) = $this->getRackNoQuery($filters);
         list($languages, $languageQuery) = $this->getLanguageQuery($filters);
         list($staticParams, $staticQuery) = $this->getStaticQuery($filters['searchString']);
+        list($start, $length) = $this->getPageLimit($filters['page']);
 
         $borrowQuery = $this->getAvailabilityQuery($filters['availability']);
-        $pageLimit = $this->getPageLimit($filters['page']);
 
         $queries = [
             $authorQuery,
@@ -201,20 +205,22 @@ class Books extends Handler {
             $subjectIds,
             $racks,
             $languages,
-            $staticParams,
-            $pageLimit
+            $staticParams
         );
 
         $WHERE = 'WHERE ' . join(' AND ', array_filter($queries));
 
-        $response = $this->select(
+        $books = $this->select(
             "SELECT bookid, title, rackno, accessno FROM books " .
             "LEFT JOIN authorassoc USING(bookid) " .
             "LEFT JOIN subjectassoc USING(bookid) " .
-            "$WHERE GROUP BY bookid ORDER BY title " .
-            "LIMIT ?, ?",
+            "$WHERE GROUP BY bookid ORDER BY title ",
             $params
         );
+
+        $response = [];
+        $response['list'] = array_slice($books, $start, $length);
+        $response['count'] = count($books);
 
         $this->send($response, TRUE);
     }
