@@ -18,6 +18,7 @@ class Database {
         $bound_params = [str_repeat('s', count($params))];
 
         for ($i = 0; $i < count($params); ++$i) {
+            $params[$i] = is_bool($params[$i]) ? intval($params[$i]) : $params[$i];
             $bound_params[] = &$params[$i];
         }
 
