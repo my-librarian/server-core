@@ -29,8 +29,6 @@ class Book extends Handler {
 
     private function insertBook($data) {
 
-        $data['original'] = $data['original'] ? 1 : 0;
-
         list($columns, $values) = $this->mapBookColumns($data);
 
         return $this->insert('books', $columns, $values);
@@ -69,7 +67,8 @@ class Book extends Handler {
             'binding',
             'original',
             'source',
-            'condition'
+            'condition',
+            'url'
         ];
 
         $values = array_map(
