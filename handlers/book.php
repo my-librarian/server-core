@@ -65,7 +65,7 @@ class Book extends Handler {
             'isbn',
             'cost',
             'binding',
-            'original',
+            'copy',
             'source',
             'condition',
             'url'
