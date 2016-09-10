@@ -4,7 +4,7 @@ namespace handlers;
 
 use lib\Error;
 use lib\Handler;
-use lib\Session;
+use lib\Session as UserSession;
 
 class User extends Handler {
 
@@ -37,7 +37,7 @@ class User extends Handler {
             if ($session) {
 
                 foreach ($user as $key => $value) {
-                    Session::set($key, $value);
+                    UserSession::set($key, $value);
                 }
             }
 
