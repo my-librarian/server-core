@@ -210,8 +210,10 @@ class Books extends Handler {
 
         $WHERE = 'WHERE ' . join(' AND ', array_filter($queries));
 
+        $borrowed = "(SELECT count(*) FROM borrow WHERE borrow.bookid = books.bookid AND returndate IS NULL) AS borrowed";
+
         $books = $this->select(
-            "SELECT bookid, title, rackno, accessno FROM books " .
+            "SELECT bookid, title, rackno, accessno, $borrowed FROM books " .
             "LEFT JOIN authorassoc USING(bookid) " .
             "LEFT JOIN subjectassoc USING(bookid) " .
             "$WHERE GROUP BY bookid ORDER BY title ",
@@ -219,7 +221,11 @@ class Books extends Handler {
         );
 
         $response = [];
-        $response['list'] = array_slice($books, $start, $length);
+        $response['list'] = array_map(function ($book) {
+            $book['borrowed'] = $book['borrowed'] > 0;
+
+            return $book;
+        }, array_slice($books, $start, $length));
         $response['count'] = count($books);
 
         $this->send($response, TRUE);
