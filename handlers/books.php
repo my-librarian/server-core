@@ -59,6 +59,35 @@ class Books extends Handler {
         return array($languages, $languageQuery);
     }
 
+    private function fuzzyCompare($books, $searchString) {
+
+        $search = preg_replace('/\s/', '', $searchString);
+        $similarities = [];
+
+        for ($i = 0; $i < count($books); ++$i) {
+            $title = $books[$i]['title'];
+            $title = preg_replace('/\s/', '', $title);
+
+            $similarities[$i] = similar_text($title, $search);
+        }
+
+        $avgSimilarity = 0;
+        foreach ($similarities as $l) {
+            $avgSimilarity += $l;
+        }
+
+        if ($avgSimilarity === 0) {
+            return [];
+        }
+
+        $avgSimilarity = $avgSimilarity / count($similarities);
+
+        return array_filter($books, function ($i) use ($similarities, $avgSimilarity) {
+
+            return $similarities[$i] >= $avgSimilarity;
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
     private function getPageLimit($page) {
 
         $PAGE_SIZE = 20;
@@ -84,26 +113,6 @@ class Books extends Handler {
         $rackNoQuery = $this->wrapQuery($rackNoQuery);
 
         return array($racks, $rackNoQuery);
-    }
-
-    private function getStaticQuery($searchString) {
-
-        $queries = [
-            "LOWER(books.title) LIKE ?",
-            "LOWER(books.accessno) LIKE ?",
-            "LOWER(REPLACE(books.rackno, '-', '')) LIKE ?"
-        ];
-
-        $searchString = strtolower("%$searchString%");
-        $staticQuery = join(' OR ', $queries);
-        $staticQuery = $this->wrapQuery($staticQuery);
-        $staticParams = [
-            $searchString,
-            $searchString,
-            str_replace('-', '', $searchString)
-        ];
-
-        return [$staticParams, $staticQuery];
     }
 
     private function getSubjectQuery($filters) {
@@ -186,9 +195,9 @@ class Books extends Handler {
         list($subjectIds, $subjectQuery) = $this->getSubjectQuery($filters);
         list($racks, $rackNoQuery) = $this->getRackNoQuery($filters);
         list($languages, $languageQuery) = $this->getLanguageQuery($filters);
-        list($staticParams, $staticQuery) = $this->getStaticQuery($filters['searchString']);
         list($start, $length) = $this->getPageLimit($filters['page']);
 
+        $searchString = $filters['searchString'];
         $borrowQuery = $this->getAvailabilityQuery($filters['availability']);
 
         $queries = [
@@ -196,32 +205,49 @@ class Books extends Handler {
             $subjectQuery,
             $rackNoQuery,
             $languageQuery,
-            $borrowQuery,
-            $staticQuery
+            $borrowQuery
         ];
 
         $params = array_merge(
             $authorIds,
             $subjectIds,
             $racks,
-            $languages,
-            $staticParams
+            $languages
         );
 
-        $WHERE = 'WHERE ' . join(' AND ', array_filter($queries));
+        $WHERE = join(' AND ', array_filter($queries));
+
+        if (!empty($WHERE)) {
+
+            $WHERE = "WHERE $WHERE";
+        }
 
         $books = $this->select(
             "SELECT bookid, title, rackno, accessno FROM books " .
             "LEFT JOIN authorassoc USING(bookid) " .
             "LEFT JOIN subjectassoc USING(bookid) " .
-            "$WHERE GROUP BY bookid ORDER BY title ",
+            "$WHERE GROUP BY bookid ORDER BY title DESC",
             $params
         );
+
+        $booksAccession = array_filter($books, function ($book) use ($searchString) {
+
+            return preg_match("/$searchString/", $book['accessno']);
+        });
+
+        $booksTitle = $this->fuzzyCompare($books, $searchString);
+
+        $books = array_merge($booksAccession, $booksTitle);
+        $books = array_map("unserialize", array_unique(array_map("serialize", $books)));
+
+        usort($books, function ($book1, $book2) {
+
+            return strcmp($book1['title'], $book2['title']);
+        });
 
         $response = [];
         $response['list'] = array_slice($books, $start, $length);
         $response['count'] = count($books);
-
         $this->send($response, TRUE);
     }
 }
