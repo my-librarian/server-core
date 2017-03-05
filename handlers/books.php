@@ -94,13 +94,13 @@ class Books extends Handler {
             "LOWER(REPLACE(books.rackno, '-', '')) LIKE ?"
         ];
 
-        $searchString = strtolower("%$searchString%");
+        $searchString = strtolower("$searchString");
         $staticQuery = join(' OR ', $queries);
         $staticQuery = $this->wrapQuery($staticQuery);
         $staticParams = [
+            "%$searchString%",
             $searchString,
-            $searchString,
-            str_replace('-', '', $searchString)
+            str_replace('-', '', "$searchString%")
         ];
 
         return [$staticParams, $staticQuery];
